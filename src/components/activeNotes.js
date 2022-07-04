@@ -7,14 +7,14 @@ class ActiveNotes extends React.Component {
     super (props)
 
     this.state = {
-      notes : this.getActiveNoteFromInitialData()
+      notes : this.getActiveNote()
     }
   }
 
-  getActiveNoteFromInitialData() {
+  getActiveNote() {
     const activeNotes = []
 
-    getInitialData().map(data => {
+    this.props.notes.map(data => {
       if (!data.archived) {
         activeNotes.push(data)
       }
