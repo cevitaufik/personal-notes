@@ -29,7 +29,7 @@ export default function Notes({notes = null, title, changeStatus}) {
 
 function Header({children, title}) {
   return (
-    <div className='container my-5 bg-white rounded-5'>
+    <div className='container my-5 bg-white rounded'>
       <div className='p-3'>
         <h1 className='mb-4'>{title}</h1>
         <div className="row g-3">
