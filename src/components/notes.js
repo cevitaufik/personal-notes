@@ -1,7 +1,7 @@
 import React from 'react';
 import Card from './card';
 
-export default function Notes({notes = null, title, changeStatus}) {
+export default function Notes({notes = null, title, changeStatus, deleteNote}) {
   if (notes.length >= 1) {
     return (
       <Header title={title} >
@@ -12,6 +12,7 @@ export default function Notes({notes = null, title, changeStatus}) {
                 note={note}
                 title={title}
                 changeStatus={() => changeStatus(note.id)}
+                deleteNote={() => deleteNote(note.id)}
               />
             </div>
           )

@@ -3,6 +3,7 @@ import { getInitialData } from '../utils/index'
 import Notes from './notes'
 import Navbar from './navbar'
 import Form from './form'
+import SearchBox from './searchBox'
 
 class PersonalNotes extends React.Component {
   constructor (props) {
@@ -12,13 +13,16 @@ class PersonalNotes extends React.Component {
       notes : getInitialData(),
       activeNotes : this.getActiveNotes(),
       archivedNotes : [],
+      titleLength : 0,
+      titleMaxLength : 50,
+      keyword : '',
 
       newNote: {
         id : '',
         title : '',
         body : '',
         createdAt : '',
-        arcived : false,
+        archived : false,
       }
     }
 
@@ -26,9 +30,10 @@ class PersonalNotes extends React.Component {
 
     this.handleTitleChange = this.handleTitleChange.bind(this)
     this.handleBodyChange = this.handleBodyChange.bind(this)
-    this.handleArcivedChange = this.handleArcivedChange.bind(this)
+    this.handleArchivedChange = this.handleArchivedChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
-
+    this.onDeleteNote = this.onDeleteNote.bind(this)
+    this.onChangeKeyword = this.onChangeKeyword.bind(this)
   }
 
   getActiveNotes() {
@@ -74,6 +79,13 @@ class PersonalNotes extends React.Component {
   }
 
   handleTitleChange(e) {
+    let length = e.target.value.length
+    this.titleLengthCounter(length)
+
+    if (this.state.titleLength > this.state.titleMaxLength) {
+      return alert('Judul catatan terlalu panjang')
+    }
+
     this.setState(prevState => ({
       ...prevState,
       newNote: {
@@ -81,6 +93,17 @@ class PersonalNotes extends React.Component {
         title : e.target.value
       }
     }))
+
+    this.createId()
+    this.createCreatedAt()
+  }
+
+  titleLengthCounter(length) {
+    this.setState({titleLength : length})
+  }
+
+  titleLengthCounterReset() {
+    this.setState({titleLength : 0})
   }
 
   handleBodyChange(e) {
@@ -93,28 +116,17 @@ class PersonalNotes extends React.Component {
     }))
   }
 
-  handleArcivedChange(e) {
+  handleArchivedChange(e) {
     this.setState(prevState => ({
       ...prevState,
       newNote: {
         ...prevState.newNote,
-        arcived : e.target.checked
+        archived : e.target.checked
       }
     }))
   }
 
-  handleSubmit(e) {
-    e.preventDefault()
-    let date = new Date()
-
-    this.setState(prevState => ({
-      ...prevState,
-      newNote: {
-        ...prevState.newNote,
-        createdAt : date.toISOString()
-      }
-    }))
-
+  createId() {
     this.setState(prevState => ({
       ...prevState,
       newNote: {
@@ -122,34 +134,106 @@ class PersonalNotes extends React.Component {
         id : Date.now()
       }
     }))
+  }
+
+  createCreatedAt() {
+    let date = new Date()
+    date = date.toISOString()
+
+    this.setState(prevState => ({
+      ...prevState,
+      newNote: {
+        ...prevState.newNote,
+        createdAt : date,
+      }
+    }))
+  }
+
+  resetNewNote() {
+    this.setState({newNote : {
+      id : '',
+        title : '',
+        body : '',
+        createdAt : '',
+        archived : false,
+    }})
+  }
+
+  handleSubmit(e) {
+    e.preventDefault()
 
     let tmp = this.state.notes
-    tmp.push(this.state.newNote)
+    tmp.unshift(this.state.newNote)
+
     this.setState({notes: tmp})
 
+    this.resetNewNote()
+    this.titleLengthCounterReset()
     this.updateCategory(this.state.notes)
+  }
+
+  onDeleteNote(noteId) {
+    let tmp = this.state.notes
+
+    tmp.map((note, index) => {
+      if(note.id === noteId) {
+        tmp.splice(index, 1)
+      }
+    })
+
+    this.setState({notes: tmp})
+    this.updateCategory(this.state.notes)
+  }
+
+  onChangeKeyword(e) {
+    this.setState({keyword : e.target.value})
+    let tmp = []
+
+    this.state.notes.map((note, index) => {
+      if (note.title.toLowerCase().includes(this.state.keyword.toLowerCase())) {
+        tmp.push(this.state.notes[index])
+      }
+    })
+
+    this.updateCategory(tmp)
+
+    if (this.state.keyword.trim().length <= 1) {
+      this.updateCategory(this.state.notes)
+    }    
   }
 
   render() {
     return (
       <div className='bg-secondary bg-opacity-10 pb-5'>
         <Navbar />
+
         <Form 
           newNote={this.state.newNote}
           onSubmit={this.handleSubmit}
           onTitleChange={this.handleTitleChange}
           onBodyChange={this.handleBodyChange}
-          onArcivedChange={this.handleArcivedChange}
+          onArchivedChange={this.handleArchivedChange}
+          titleLength={this.state.titleLength}
+          titleMaxLength={this.state.titleMaxLength}
         />
+
+        <SearchBox 
+          keyword={this.state.keyword}
+          onChangeKeyword={this.onChangeKeyword}
+        />
+
         <Notes 
           notes={this.state.activeNotes}
           title={'Catatan aktif'}
           changeStatus={this.onChangeStatus}
+          deleteNote={this.onDeleteNote}
         />
+
         <Notes 
           notes={this.state.archivedNotes}
           title={'Arsip catatan'}
           changeStatus={this.onChangeStatus}
+          deleteNote={this.onDeleteNote}
         />
       </div>
     )

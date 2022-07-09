@@ -1,7 +1,7 @@
 import React from 'react'
 import { showFormattedDate } from '../utils/index'
 
-export default function Card({note, changeStatus}) {
+export default function Card({note, changeStatus, deleteNote}) {
   let buttonText = (note.archived) ? 'Aktifkan' : 'Arsipkan'
   
   return (
@@ -13,6 +13,10 @@ export default function Card({note, changeStatus}) {
           <span className="btn btn-primary"
                 onClick={() => changeStatus(note.id)}>
             {buttonText}
+          </span>
+          <span className="btn btn-danger ms-2"
+                onClick={() => deleteNote(note.id)}>
+            Hapus
           </span>
         </div>
       </div>
